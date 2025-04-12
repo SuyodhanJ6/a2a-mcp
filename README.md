@@ -1,4 +1,4 @@
-# LangGraph Currency Agent with A2A Protocol currated by Enso Labs
+# 🤖 A2A Protocol 💬 from Enso Labs 🤖
 
 This sample demonstrates a currency conversion agent built with [LangGraph](https://langchain-ai.github.io/langgraph/) and exposed through the A2A protocol. It showcases conversational interactions with support for multi-turn dialogue and streaming responses. For more information checkout the OFFICIAL repo at https://github.com/google/A2A/tree/main
 
