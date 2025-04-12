@@ -1,52 +1,21 @@
-# LangGraph Currency Agent with A2A Protocol
+# LangGraph Currency Agent with A2A Protocol currated by Enso Labs
 
-This sample demonstrates a currency conversion agent built with [LangGraph](https://langchain-ai.github.io/langgraph/) and exposed through the A2A protocol. It showcases conversational interactions with support for multi-turn dialogue and streaming responses.
+This sample demonstrates a currency conversion agent built with [LangGraph](https://langchain-ai.github.io/langgraph/) and exposed through the A2A protocol. It showcases conversational interactions with support for multi-turn dialogue and streaming responses. For more information checkout the OFFICIAL repo at https://github.com/google/A2A/tree/main
 
-## How It Works
+## Docker Deploy
 
-This agent uses LangGraph with Google Gemini to provide currency exchange information through a ReAct agent pattern. The A2A protocol enables standardized interaction with the agent, allowing clients to send requests and receive real-time updates.
+```bash
+# Pull Image
+docker pull ghcr.io/enso-labs/a2a-langgraph
 
-```mermaid
-sequenceDiagram
-    participant Client as A2A Client
-    participant Server as A2A Server
-    participant Agent as LangGraph Agent
-    participant API as Frankfurter API
+# Run Image
+docker run -p 10000:10000 --name a2a \
+-e GOOGLE_API_KEY=your_google_api_key \
+ghcr.io/enso-labs/a2a-langgraph
 
-    Client->>Server: Send task with currency query
-    Server->>Agent: Forward query to currency agent
-
-    alt Complete Information
-        Agent->>API: Call get_exchange_rate tool
-        API->>Agent: Return exchange rate data
-        Agent->>Server: Process data & return result
-        Server->>Client: Respond with currency information
-    else Incomplete Information
-        Agent->>Server: Request additional input
-        Server->>Client: Set state to "input-required"
-        Client->>Server: Send additional information
-        Server->>Agent: Forward additional info
-        Agent->>API: Call get_exchange_rate tool
-        API->>Agent: Return exchange rate data
-        Agent->>Server: Process data & return result
-        Server->>Client: Respond with currency information
-    end
-
-    alt With Streaming
-        Note over Client,Server: Real-time status updates
-        Server->>Client: "Looking up exchange rates..."
-        Server->>Client: "Processing exchange rates..."
-        Server->>Client: Final result
-    end
+# Check Logs
+docker logs -f a2a
 ```
-
-## Key Features
-
-- **Multi-turn Conversations**: Agent can request additional information when needed
-- **Real-time Streaming**: Provides status updates during processing
-- **Push Notifications**: Support for webhook-based notifications
-- **Conversational Memory**: Maintains context across interactions
-- **Currency Exchange Tool**: Integrates with Frankfurter API for real-time rates
 
 ## Prerequisites
 
