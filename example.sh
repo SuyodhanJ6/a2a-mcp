@@ -1,7 +1,7 @@
 ### Simple Request
 
 ```bash
-curl -X POST http://localhost:10000 \
+curl -X POST https://a2a.enso.sh \
 -H "Content-Type: application/json" \
 -d '{
 	"jsonrpc": "2.0",
@@ -23,7 +23,7 @@ curl -X POST http://localhost:10000 \
 			]
 		}
 	}
-}'
+}' | jq
 ```
 
 ### Multiple Messages
@@ -82,7 +82,7 @@ curl -X POST http://localhost:10000 \
 
 ### Streaming Response
 ```bash
-curl -X POST http://localhost:10000 \
+curl -X POST https://a2a.enso.sh \
 -H "Content-Type: application/json" \
 -d '{
   "jsonrpc": "2.0",
@@ -104,5 +104,5 @@ curl -X POST http://localhost:10000 \
       ]
     }
   }
-}' | jq
+}'
 ```

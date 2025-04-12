@@ -10,7 +10,7 @@ docker pull ghcr.io/enso-labs/a2a-langgraph
 
 # Run Image
 docker run -p 10000:10000 --name a2a \
--e GOOGLE_API_KEY=your_google_api_key \
+-e GOOGLE_API_KEY=AIzaSyAeFgFjiU1vnS3bbsF3dRUaLxYx9Nbq280 \
 ghcr.io/enso-labs/a2a-langgraph
 
 # Check Logs
