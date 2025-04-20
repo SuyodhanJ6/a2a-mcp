@@ -1,35 +1,29 @@
-# 🤖 A2A Protocol 💬 from Enso Labs 🤖
+# 🤖 A2A-to-Everything (A2E) with LangGraph 🤖
 
-This sample demonstrates a currency conversion agent built with [LangGraph](https://langchain-ai.github.io/langgraph/) and exposed through the A2A protocol. It showcases conversational interactions with support for multi-turn dialogue and streaming responses. For more information checkout the OFFICIAL repo at https://github.com/google/A2A/tree/main
+This project demonstrates an Agent-to-Everything (A2E) implementation that combines multiple capabilities through the A2A protocol. It showcases how specialized agents can be used as tools by a central orchestrating agent using [LangGraph](https://langchain-ai.github.io/langgraph/) and the [Model Context Protocol (MCP)](https://github.com/google/model-context-protocol).
 
-## Docker Deploy
+## Project Structure
 
-```bash
-# Pull Image
-docker pull ghcr.io/enso-labs/a2a-langgraph
+The repository is organized into the following components:
 
-#AIzaSyB5CdrtgtclWC24vWlHgpZdRXax8FM20og
-# Run Image
-docker run -p 10000:10000 --name a2a \
--e GOOGLE_API_KEY=$AIzaSyB5CdrtgtclWC24vWlHgpZdRXax8FM20og \
-ghcr.io/enso-labs/a2a-langgraph
-
-# Check Logs
-docker logs -f a2a
-```
+- `finala2e/`: The main A2E implementation combining math and currency capabilities
+- `graph/`: Core LangGraph agent implementation with A2A tool integration
+- `test_mcp/`: MCP server implementations and testing clients
 
 ## Prerequisites
 
-- Python 3.13 or higher
-- UV
-- Access to an LLM and API Key
+- Python 3.10 or higher
+- Google API Key for Gemini model
+- [uv](https://github.com/astral-sh/uv) package manager
+- Docker (optional, for containerized deployment)
 
-## Setup & Running
+## Setup
 
-1. Navigate to the samples directory:
+1. Clone the repository:
 
    ```bash
-   cd samples/python/agents/langgraph
+   git clone https://github.com/yourusername/a2a-langgraph.git
+   cd a2a-langgraph
    ```
 
 2. Create an environment file with your API key:
@@ -38,254 +32,125 @@ docker logs -f a2a
    echo "GOOGLE_API_KEY=your_api_key_here" > .env
    ```
 
-3. Run the agent:
+3. Install dependencies with uv:
 
    ```bash
-   # Basic run on default port 10000
-   uv run .
-
-   # On custom host/port
-   uv run . --host 0.0.0.0 --port 8080
+   uv pip install .
    ```
 
-4. In a separate terminal, run an A2A [client](/samples/python/hosts/README.md):
+## Running the A2E Agent
 
-   ```bash
-   uv run hosts/cli
-   ```
+### Start the Required Servers
+
+First, start the component A2A servers:
+
+```bash
+# Start the Currency and Math A2A servers (keep running in a separate terminal)
+uv run -m finala2e.start_servers
+```
+
+This starts:
+- Currency Agent server on port 10000
+- Math Agent server on port 10001
+
+### Run the A2E Server
+
+In a separate terminal, run the A2E agent as an A2A-compatible server:
+
+```bash
+uv run -m finala2e
+```
+
+By default, the server runs on localhost:10003. You can specify a different host and port:
+
+```bash
+uv run -m finala2e --host 0.0.0.0 --port 8000
+```
+
+### Direct Testing with the Client
+
+You can test the agent directly using the client:
+
+```bash
+# Run a single query
+uv run -m finala2e.client_stdio --query "What is 5 + 7?"
+
+# Start an interactive chat session
+uv run -m finala2e.client_stdio --chat
+```
+
+## MCP Integration
+
+The `test_mcp` directory provides examples of integrating A2A agents with MCP.
+
+### Start MCP Servers
+
+```bash
+uv run test_mcp/start_sse_servers.py
+```
+
+### Using STDIO Transport Client
+
+```bash
+# Run with a specific query
+uv run test_mcp/client/client_stdio.py --query "What is 5 + 7?"
+
+# Run in interactive chat mode
+uv run test_mcp/client/client_stdio.py --chat
+```
+
+### Using SSE Transport Client
+
+```bash
+# Run with a specific query
+uv run test_mcp/client/client_sse.py --query "What is 5 + 7?"
+
+# Run in interactive chat mode
+uv run test_mcp/client/client_sse.py --chat
+```
 
 ## Technical Implementation
 
 - **LangGraph ReAct Agent**: Uses the ReAct pattern for reasoning and tool usage
+- **MCP Integration**: Connects to A2A agents via Model Context Protocol
+- **A2A Tools**: Specialized tools for math and currency operations
 - **Streaming Support**: Provides incremental updates during processing
 - **Checkpoint Memory**: Maintains conversation state between turns
 - **Push Notification System**: Webhook-based updates with JWK authentication
-- **A2A Protocol Integration**: Full compliance with A2A specifications
 
-## Limitations
+## Example Queries
 
-- Only supports text-based input/output (no multi-modal support)
-- Uses Frankfurter API which has limited currency options
-- Memory is session-based and not persisted between server restarts
+- "What is 7 + 12?"
+- "Multiply 8 and 15"
+- "What is the exchange rate between USD and EUR?"
+- "Convert 100 USD to JPY"
+- "Add 23 and 45, then convert the result from USD to GBP"
 
-## Examples
+## Docker Deployment (Optional)
 
-**Synchronous request**
+```bash
+# Build Image
+docker build -t a2a-langgraph .
 
-Request:
+# Run Image
+docker run -p 10003:10003 -e GOOGLE_API_KEY=your_api_key_here --name a2e a2a-langgraph
 
-```
-POST http://localhost:10000
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "id": 11,
-  "method": "tasks/send",
-  "params": {
-    "id": "129",
-    "sessionId": "8f01f3d172cd4396a0e535ae8aec6687",
-    "acceptedOutputModes": [
-      "text"
-    ],
-    "message": {
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "How much is the exchange rate for 1 USD to INR?"
-        }
-      ]
-    }
-  }
-}
+# Check Logs
+docker logs -f a2e
 ```
 
-Response:
+## Troubleshooting
 
-```
-{
-  "jsonrpc": "2.0",
-  "id": 11,
-  "result": {
-    "id": "129",
-    "status": {
-      "state": "completed",
-      "timestamp": "2025-04-02T16:53:29.301828"
-    },
-    "artifacts": [
-      {
-        "parts": [
-          {
-            "type": "text",
-            "text": "The exchange rate for 1 USD to INR is 85.49."
-          }
-        ],
-        "index": 0
-      }
-    ],
-    "history": []
-  }
-}
-```
+If you encounter issues:
 
-**Multi-turn example**
-
-Request - Seq 1:
-
-```
-POST http://localhost:10000
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "id": 10,
-  "method": "tasks/send",
-  "params": {
-    "id": "130",
-    "sessionId": "a9bb617f2cd94bd585da0f88ce2ddba2",
-    "acceptedOutputModes": [
-      "text"
-    ],
-    "message": {
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "How much is the exchange rate for 1 USD?"
-        }
-      ]
-    }
-  }
-}
-```
-
-Response - Seq 2:
-
-```
-{
-  "jsonrpc": "2.0",
-  "id": 10,
-  "result": {
-    "id": "130",
-    "status": {
-      "state": "input-required",
-      "message": {
-        "role": "agent",
-        "parts": [
-          {
-            "type": "text",
-            "text": "Which currency do you want to convert to? Also, do you want the latest exchange rate or a specific date?"
-          }
-        ]
-      },
-      "timestamp": "2025-04-02T16:57:02.336787"
-    },
-    "history": []
-  }
-}
-```
-
-Request - Seq 3:
-
-```
-POST http://localhost:10000
-Content-Type: application/json
-
-{
-  "jsonrpc": "2.0",
-  "id": 10,
-  "method": "tasks/send",
-  "params": {
-    "id": "130",
-    "sessionId": "a9bb617f2cd94bd585da0f88ce2ddba2",
-    "acceptedOutputModes": [
-      "text"
-    ],
-    "message": {
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "CAD"
-        }
-      ]
-    }
-  }
-}
-```
-
-Response - Seq 4:
-
-```
-{
-  "jsonrpc": "2.0",
-  "id": 10,
-  "result": {
-    "id": "130",
-    "status": {
-      "state": "completed",
-      "timestamp": "2025-04-02T16:57:40.033328"
-    },
-    "artifacts": [
-      {
-        "parts": [
-          {
-            "type": "text",
-            "text": "The current exchange rate is 1 USD = 1.4328 CAD."
-          }
-        ],
-        "index": 0
-      }
-    ],
-    "history": []
-  }
-}
-```
-
-**Streaming example**
-
-Request:
-
-```
-{
-  "jsonrpc": "2.0",
-  "id": 12,
-  "method": "tasks/sendSubscribe",
-  "params": {
-    "id": "131",
-    "sessionId": "cebd704d0ddd4e8aa646aeb123d60614",
-    "acceptedOutputModes": [
-      "text"
-    ],
-    "message": {
-      "role": "user",
-      "parts": [
-        {
-          "type": "text",
-          "text": "How much is 100 USD in GBP?"
-        }
-      ]
-    }
-  }
-}
-```
-
-Response:
-
-```
-data: {"jsonrpc":"2.0","id":12,"result":{"id":"131","status":{"state":"working","message":{"role":"agent","parts":[{"type":"text","text":"Looking up the exchange rates..."}]},"timestamp":"2025-04-02T16:59:34.578939"},"final":false}}
-
-data: {"jsonrpc":"2.0","id":12,"result":{"id":"131","status":{"state":"working","message":{"role":"agent","parts":[{"type":"text","text":"Processing the exchange rates.."}]},"timestamp":"2025-04-02T16:59:34.737052"},"final":false}}
-
-data: {"jsonrpc":"2.0","id":12,"result":{"id":"131","artifact":{"parts":[{"type":"text","text":"Based on the current exchange rate, 1 USD is equivalent to 0.77252 GBP. Therefore, 100 USD would be approximately 77.252 GBP."}],"index":0,"append":false}}}
-
-data: {"jsonrpc":"2.0","id":12,"result":{"id":"131","status":{"state":"completed","timestamp":"2025-04-02T16:59:35.331844"},"final":true}}
-```
+1. Make sure the start_servers.py script is running and has successfully started both the Currency and Math A2A servers
+2. Check that the ports 10000, 10001, and 10003 are not in use by other applications
+3. Verify that your GOOGLE_API_KEY is valid and set correctly
+4. For MCP tool connections, ensure the MCP servers are running (for SSE transport)
 
 ## Learn More
 
 - [A2A Protocol Documentation](https://google.github.io/A2A/#/documentation)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [Frankfurter API](https://www.frankfurter.app/docs/)
+- [Model Context Protocol](https://github.com/google/model-context-protocol)
 - [Google Gemini API](https://ai.google.dev/gemini-api)
