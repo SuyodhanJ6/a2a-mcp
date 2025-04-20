@@ -10,6 +10,8 @@ The repository is organized into the following components:
 - `graph/`: Core LangGraph agent implementation with A2A tool integration
 - `test_mcp/`: MCP server implementations and testing clients
 
+![Architecture Diagram](docs/diagram.png)
+
 ## Prerequisites
 
 - Python 3.10 or higher
