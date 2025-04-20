@@ -1,0 +1,7 @@
+# Required packages for MCP testing
+langchain-mcp-adapters>=0.0.2
+mcp>=0.0.5
+httpx>=0.22.0
+langgraph>=0.0.21
+langchain>=0.0.329
+langchain-google-genai>=0.0.5 

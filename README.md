@@ -8,9 +8,10 @@ This sample demonstrates a currency conversion agent built with [LangGraph](http
 # Pull Image
 docker pull ghcr.io/enso-labs/a2a-langgraph
 
+#AIzaSyB5CdrtgtclWC24vWlHgpZdRXax8FM20og
 # Run Image
 docker run -p 10000:10000 --name a2a \
--e GOOGLE_API_KEY=$GOOGLE_API_KEY \
+-e GOOGLE_API_KEY=$AIzaSyB5CdrtgtclWC24vWlHgpZdRXax8FM20og \
 ghcr.io/enso-labs/a2a-langgraph
 
 # Check Logs
